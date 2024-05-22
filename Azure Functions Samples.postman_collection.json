@@ -1,0 +1,158 @@
+{
+	"info": {
+		"_postman_id": "ed490b93-6847-46e2-a889-8d64364d6c9a",
+		"name": "Azure Functions Samples",
+		"description": "Using https://learn.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview?tabs=in-process%2Cnodejs-v3%2Cv1-model&pivots=csharp",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Start Human Interaction",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Run Request\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    console.log(jsonData.sendEventPostUri);\r",
+							"    var approvalEventUrl = jsonData.sendEventPostUri.replace(\"{eventName}\",\"ApprovalEvent\");\r",
+							"\r",
+							"    const options = {\r",
+							"    url:  approvalEventUrl, \r",
+							"    method: 'POST',\r",
+							"    header: {\r",
+							"        'Content-Type': 'application/json'\r",
+							"    },\r",
+							"    body: {\r",
+							"        mode: 'raw',\r",
+							"        raw: JSON.stringify(true)\r",
+							"    }\r",
+							"    };\r",
+							"    setTimeout(function(){\r",
+							"        pm.sendRequest(options, function (err, res) {\r",
+							"        console.log(res);\r",
+							"    });\r",
+							"    }, 10000);\r",
+							"    \r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{siteUrlBase}}/StartHuman_HttpStart",
+					"host": [
+						"{{siteUrlBase}}"
+					],
+					"path": [
+						"StartHuman_HttpStart"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Start FIFO",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Run Request\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    console.log(jsonData[0]); \r",
+							"    pm.sendRequest(pm.environment.get(\"siteUrlBase\")+\"/StartMonitor_HttpStart?id=\"+jsonData[0].id, function (err, res) {\r",
+							"                    setTimeout(function(){\r",
+							"                        pm.sendRequest(pm.environment.get(\"siteUrlBase\")+\"/UpdateProspects?id=\"+jsonData[0].id+\"&status=complete\", function (err, res) {\r",
+							"                        console.log(res);\r",
+							"                    });\r",
+							"                    }, 10000);\r",
+							"    });\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{siteUrlBase}}/GetProspects",
+					"host": [
+						"{{siteUrlBase}}"
+					],
+					"path": [
+						"GetProspects"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Start Workflow",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Run Request\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    console.log(jsonData[0]); \r",
+							"    pm.sendRequest(pm.environment.get(\"siteUrlBase\")+\"/StartOffer_HttpStart?id=\"+jsonData[0].id, function (err, res) {\r",
+							"    });\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{siteUrlBase}}/GetProspects",
+					"host": [
+						"{{siteUrlBase}}"
+					],
+					"path": [
+						"GetProspects"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "siteUrlBase",
+			"value": "http://localhost:7111/api",
+			"type": "default"
+		}
+	]
+}
